@@ -3872,3 +3872,6 @@
 	YouTube Shorts 1080×1920	YouTube Shorts 1080×1920
 	{frames} frames ({seconds} s)	{frames} images ({seconds} s)
 	{name} already exists, so nothing was exported. To replace it, choose it in the save dialog.	{name} existe déjà, rien n'a donc été exporté. Pour le remplacer, choisissez-le dans la boîte d'enregistrement.
+	Hardware Encoding	Encodage matériel
+	Use the hardware encoder when available	Utiliser l'encodeur matériel s'il est disponible
+	KB	Ko
