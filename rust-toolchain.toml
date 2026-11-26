@@ -1,0 +1,7 @@
+# Personal integration build only (not for upstream): rustc 1.97.0 miscompiles safe code at
+# opt-level >= 1 (Make Subsequence dropped every transition; reproduction kept outside the repo).
+# 1.95 is the workspace's rust-version and gives the right result.
+[toolchain]
+channel = "1.95"
+profile = "minimal"
+components = ["rustfmt", "clippy"]
