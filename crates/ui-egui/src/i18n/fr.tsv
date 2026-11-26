@@ -3875,3 +3875,5 @@
 	Hardware Encoding	Encodage matériel
 	Use the hardware encoder when available	Utiliser l'encodeur matériel s'il est disponible
 	KB	Ko
+	1 item	1 élément
+	No audio output device found: playing without sound (check Settings > Audio Hardware)	Aucune sortie audio trouvée : lecture sans son (vérifiez Préférences > Matériel audio)

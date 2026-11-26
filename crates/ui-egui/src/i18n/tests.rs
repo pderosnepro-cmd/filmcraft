@@ -1031,3 +1031,15 @@ fn byte_units_follow_the_language() {
     assert_eq!(byte_units("34 MB"), "34 MB");
     set_current(before);
 }
+
+/// A count of one reads in the singular ("1 item", "1 élément"), not "1 items".
+#[test]
+fn one_item_is_singular() {
+    let before = current();
+    set_current(Language::En);
+    assert_eq!((items(1), items(2)), ("1 item".to_string(), "2 items".to_string()));
+    set_current(Language::Fr);
+    assert_ne!(items(1), "1 éléments");
+    assert!(items(1).starts_with("1 ") && items(3).starts_with("3 ") && items(1) != items(3).replacen('3', "1", 1), "{} / {}", items(1), items(3));
+    set_current(before);
+}

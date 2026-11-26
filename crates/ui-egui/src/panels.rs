@@ -302,7 +302,7 @@ pub fn drag_ghost(app: &FilmcraftApp, ui: &egui::Ui) {
         let label = match &pl {
             DragPayload::Item(i) => match dragged_selection(app, *i).len() {
                 1 => app.session.project.item(*i).map(|x| x.name.clone()).unwrap_or_default(),
-                n => format!("{n} items"),
+                n => crate::i18n::items(n),
             },
             DragPayload::Bin(b) => app.session.project.root.find_bin(filmcraft_project::BinId(*b)).map(|x| x.name.clone()).unwrap_or_default(),
             DragPayload::Source(s) => {

@@ -99,6 +99,9 @@ const PANEL_COMMANDS: [&str; 9] = [
 #[derive(Clone, Debug, Default, PartialEq, craft_ui::contract::PlainData)]
 pub(crate) struct FilmSpecs {
     timeline_title: Option<String>,
+    /// The interface language the titles are in: the dock area reads the specs again only when
+    /// they change, so a change of language must be one, or the tabs keep the old titles.
+    language: String,
 }
 
 impl PanelSpecs<PanelKind> for FilmSpecs {
@@ -406,6 +409,10 @@ impl FilmcraftApp {
         let timeline_title = seqs.open.is_empty().then(|| seqs.label());
         if self.dock_specs.timeline_title != timeline_title {
             self.dock_specs.edit(|specs| specs.timeline_title = timeline_title);
+        }
+        let language = crate::i18n::current().code();
+        if self.dock_specs.language != language {
+            self.dock_specs.edit(|specs| specs.language = language.to_string());
         }
         self.sync_live();
         // The app moved its panel focus itself since the last pass (Source after `source.open`, a

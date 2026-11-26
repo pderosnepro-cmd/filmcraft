@@ -451,6 +451,11 @@ pub fn byte_units(size: &str) -> String {
     size.to_string()
 }
 
+/// "1 item" or "{n} items" in the interface language: the count of a bin, a list or a drag.
+pub fn items(n: usize) -> String {
+    if n == 1 { t("1 item").to_string() } else { fmt(t("{n} items"), &[("n", &n.to_string())]) }
+}
+
 /// Fill `{name}` placeholders. Unknown placeholders are left as written.
 pub fn fmt(template: &str, args: &[(&str, &str)]) -> String {
     let mut out = String::new();
