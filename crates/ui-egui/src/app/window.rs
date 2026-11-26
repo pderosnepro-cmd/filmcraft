@@ -30,7 +30,7 @@ impl FilmcraftApp {
     /// Drop the layout remembered for `workspace` (Reset to Saved Layout): the saved layout is the
     /// one to reopen with until the app closes again.
     pub fn forget_remembered_layout(&mut self, workspace: &str) -> Result<(), String> {
-        if !self.workspaces.last.as_ref().is_some_and(|l| l.name == workspace) {
+        if self.workspaces.last.as_ref().is_none_or(|l| l.name != workspace) {
             return Ok(());
         }
         let mut next = self.workspaces.clone();

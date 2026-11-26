@@ -361,7 +361,7 @@ mod workspace_compat {
     /// offset or a scale when only `monitor_size` was available.
     fn old_native(window: &Value) -> Option<Value> {
         let [x, y, w, h]: [f32; 4] = serde_json::from_value(window.get("native")?.clone()).ok()?;
-        if ![x, y, w, h].iter().all(|v| v.is_finite()) || !(w > 0.0 && h > 0.0) {
+        if !([x, y, w, h].iter().all(|v| v.is_finite()) && w > 0.0 && h > 0.0) {
             return None;
         }
         let monitor: Option<OldMonitor> = serde_json::from_value(window["monitor"].clone()).ok();

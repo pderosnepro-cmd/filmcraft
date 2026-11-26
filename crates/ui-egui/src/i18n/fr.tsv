@@ -3885,3 +3885,27 @@
 	every frame a keyframe	chaque image est une image clé
 	No video	Pas de vidéo
 	No audio	Pas d'audio
+	Editing the selected narration	Modification de la narration sélectionnée
+	New narration	Nouvelle narration
+	Natural voices	Voix naturelles
+	Basic voices (built in)	Voix de base (intégrées)
+	{name} (download)	{name} (à télécharger)
+	Natural voices are not included in this build.	Les voix naturelles ne sont pas incluses dans cette version.
+	Download the natural voices? {mb} MB, once.	Télécharger les voix naturelles ? {mb} Mo, une seule fois.
+	From {source} and github.com/cmusphinx/cmudict (pronunciations). Licence: {licence}. Every file is checked against a pinned SHA-256.	Depuis {source} et github.com/cmusphinx/cmudict (prononciations). Licence : {licence}. Chaque fichier est vérifié avec une empreinte SHA-256 fixée.
+	Download	Télécharger
+	Natural voices need a one-time download.	Les voix naturelles nécessitent un téléchargement unique.
+	Download natural voices ({mb} MB)…	Télécharger les voix naturelles ({mb} Mo)…
+	Hear this voice	Écouter cette voix
+	Vocal pitch	Hauteur de voix
+	Pace	Vitesse
+	Add pause inserts [pause 1s]. Change the number for a longer or shorter pause, e.g. [pause 500ms] or [pause 2s].	Ajouter une pause insère [pause 1s]. Changez le nombre pour une pause plus longue ou plus courte, par ex. [pause 500ms] ou [pause 2s].
+	Add pause	Ajouter une pause
+	Type what you want the voice to say	Tapez ce que la voix doit dire
+	Synthesizing…	Synthèse en cours…
+	Add to timeline	Ajouter à la timeline
+Vocal pitch	Extra low	Très grave
+Vocal pitch	Low	Grave
+Vocal pitch	Default	Par défaut
+Vocal pitch	High	Aiguë
+Vocal pitch	Extra high	Très aiguë
