@@ -451,6 +451,30 @@ pub fn byte_units(size: &str) -> String {
     size.to_string()
 }
 
+/// A comma-separated description built in English (an export summary line) in the interface
+/// language, piece by piece. A label that itself holds a comma ("VBR, 1 pass") is taken whole
+/// when the catalog knows it; pieces the catalog does not know stay as they are.
+pub fn tr_list(text: &str) -> String {
+    let lang = current();
+    let pieces: Vec<&str> = text.split(", ").collect();
+    let mut out: Vec<String> = Vec::with_capacity(pieces.len());
+    let mut i = 0;
+    while let Some(piece) = pieces.get(i) {
+        if let Some(next) = pieces.get(i + 1) {
+            let pair = format!("{piece}, {next}");
+            let tr = lang.tr(&pair);
+            if tr != pair {
+                out.push(tr.to_string());
+                i += 2;
+                continue;
+            }
+        }
+        out.push(lang.tr_message(piece));
+        i += 1;
+    }
+    out.join(", ")
+}
+
 /// "1 item" or "{n} items" in the interface language: the count of a bin, a list or a drag.
 pub fn items(n: usize) -> String {
     if n == 1 { t("1 item").to_string() } else { fmt(t("{n} items"), &[("n", &n.to_string())]) }

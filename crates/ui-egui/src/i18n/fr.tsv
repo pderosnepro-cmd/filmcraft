@@ -2920,7 +2920,7 @@
 	Frame Size	Taille d'image
 	Match Source	Identique à la source
 	Field Order	Ordre des trames
-	Aspect	Format
+	Aspect	Format des pixels
 	Profile	Profil
 	Bitrate Encoding	Encodage du débit
 	Target Bitrate	Débit cible
@@ -3345,7 +3345,7 @@
 	Trimming	Rognage
 	Type Tool	Outil Texte
 	Unstack Clips	Désempiler les clips
-	Upper First	Trame supérieure d'abord
+	Upper First	Trame supérieure en premier
 	VBR, 1 pass	VBR, 1 passe
 	VBR, 2 pass	VBR, 2 passes
 	CRF (constant quality)	CRF (qualité constante)
@@ -3877,3 +3877,11 @@
 	KB	Ko
 	1 item	1 élément
 	No audio output device found: playing without sound (check Settings > Audio Hardware)	Aucune sortie audio trouvée : lecture sans son (vérifiez Préférences > Matériel audio)
+	{profile} ({bits}-bit) auto level	{profile} ({bits} bits), niveau auto
+	{profile} ({bits}-bit) {level}	{profile} ({bits} bits), niveau {level}
+	Target {rate} Mbps	cible {rate} Mbit/s
+	Max {rate} Mbps	max. {rate} Mbit/s
+	keyframe every {n} frames	une image clé toutes les {n} images
+	every frame a keyframe	chaque image est une image clé
+	No video	Pas de vidéo
+	No audio	Pas d'audio

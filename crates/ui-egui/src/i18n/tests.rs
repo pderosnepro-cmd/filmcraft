@@ -1043,3 +1043,21 @@ fn one_item_is_singular() {
     assert!(items(1).starts_with("1 ") && items(3).starts_with("3 ") && items(1) != items(3).replacen('3', "1", 1), "{} / {}", items(1), items(3));
     set_current(before);
 }
+
+/// An export summary line written in English reads in the interface language piece by piece,
+/// keeping a label that holds a comma whole and the values it does not know as they are.
+#[test]
+fn summary_lines_are_translated_piece_by_piece() {
+    let before = current();
+    set_current(Language::Fr);
+    let line = "1920x1080 (1.0), 23.976 fps, Progressive, High (8-bit) auto level, VBR, 1 pass, Target 9.94 Mbps, keyframe every 48 frames";
+    let shown = tr_list(line);
+    assert!(shown.starts_with("1920x1080 (1.0), 23.976 fps, "), "{shown}");
+    for english in ["Progressive", "auto level", "1 pass,", "Target", "keyframe every"] {
+        assert!(!shown.contains(english), "{english} left in {shown}");
+    }
+    assert!(shown.contains("9.94") && shown.contains("48"), "{shown}");
+    set_current(Language::En);
+    assert_eq!(tr_list(line), line);
+    set_current(before);
+}

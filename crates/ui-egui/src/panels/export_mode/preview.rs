@@ -118,8 +118,9 @@ pub(super) fn preview_column(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Re
                 };
                 line(ui, "Output", &output_path(ex));
                 line(ui, "", &sum.format);
-                line(ui, "", &sum.video);
-                line(ui, "", &sum.audio);
+                // the engine writes these in English (the CLI and automation read them too)
+                line(ui, "", &crate::i18n::tr_list(&sum.video));
+                line(ui, "", &crate::i18n::tr_list(&sum.audio));
                 line(
                     ui,
                     "Source",
