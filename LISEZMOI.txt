@@ -1,0 +1,35 @@
+FilmCraft (perso) 0.20.1
+========================
+
+Votre version personnelle de FilmCraft : la version de développement de storytold/filmcraft
+(main du 25 novembre 2026), avec vos 14 propositions de modifications fusionnées et les
+corrections faites pendant la recette.
+
+Elle s'installe à côté du FilmCraft officiel sans le remplacer, et partage les mêmes
+préférences et projets.
+
+Contenu
+-------
+- filmcraft.exe : l'application.
+- filmcraft-cli.exe : l'outil en ligne de commande (et le serveur MCP).
+- Voix naturelles (Kokoro) prises en charge : elles se téléchargent à la première utilisation.
+- Polices craft-fonts incluses (japonais, etc.) ; leurs licences sont dans font-licences\.
+
+Bon à savoir
+------------
+- L'installateur et les programmes ne sont pas signés : Windows SmartScreen peut afficher
+  « Windows a protégé votre ordinateur ». Cliquez sur « Informations complémentaires », puis
+  « Exécuter quand même ».
+- Compilé depuis Linux avec la chaîne MinGW (cible x86_64-pc-windows-gnu) et Rust 1.95, et non
+  avec la chaîne Microsoft des versions officielles. Le décodage matériel Windows (Media
+  Foundation, Direct3D 11) est compris. Ce binaire n'a pas encore été lancé sur un vrai Windows :
+  signalez tout souci.
+- Désinstallation : Paramètres Windows > Applications > « FilmCraft (perso) », ou le raccourci
+  « Désinstaller » du menu Démarrer. Vos projets et préférences ne sont pas supprimés.
+
+Licences
+--------
+FilmCraft est sous licence MIT OR Apache-2.0 (LICENSE-MIT, LICENSE-APACHE). Les avis des
+dépendances sont dans NOTICE, les ressources graphiques et sonores dans ATTRIBUTION.md. Le nom
+et les logos ArtCraft sont des marques de l'équipe ArtCraft, utilisées ici sans modification
+dans le cadre de FilmCraft.
