@@ -569,7 +569,7 @@ fn video_section(ui: &mut egui::Ui, reg: &mut Reg, s: &mut ExportSettings, t: &T
                 });
             } else if let Some(bpp) = s.adaptive_bitrate {
                 row(ui, t, tl!("Target Bitrate"), |ui| {
-                    ui.label(egui::RichText::new(tlf!("Adaptive ({bpp} bits per pixel)", bpp)).size(12.0));
+                    ui.label(egui::RichText::new(crate::i18n::decimals(&tlf!("Adaptive ({bpp} bits per pixel)", bpp))).size(12.0));
                     let r = ui.small_button(tl!("Set"));
                     reg.add("export.video.fixedBitrate", r.rect, "Set a fixed bitrate");
                     if r.clicked() {

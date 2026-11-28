@@ -445,10 +445,29 @@ pub fn byte_units(size: &str) -> String {
     for unit in ["KB", "MB", "GB"] {
         // only a number before the unit: "junk MB" stays as it is
         if let Some(n) = size.strip_suffix(unit).and_then(|n| n.strip_suffix(' ')).filter(|n| n.parse::<f64>().is_ok_and(f64::is_finite)) {
-            return format!("{n} {}", t(unit));
+            return decimals(&format!("{n} {}", t(unit)));
         }
     }
     size.to_string()
+}
+
+impl Language {
+    /// Whether this language writes a decimal comma ("26,78 s") rather than a point.
+    pub fn decimal_comma(self) -> bool {
+        !matches!(self, Language::En | Language::Ja | Language::ZhCn | Language::Ko)
+    }
+}
+
+/// `text` with the decimal point of each number (a `.` between two digits) as the interface
+/// language writes it: "26.777 s" reads "26,777 s" in French. Use it on text the app builds from
+/// numbers, not on names or paths a user typed.
+pub fn decimals(text: &str) -> String {
+    if !current().decimal_comma() {
+        return text.to_string();
+    }
+    let chars: Vec<char> = text.chars().collect();
+    let digit = |i: Option<&char>| i.is_some_and(char::is_ascii_digit);
+    chars.iter().enumerate().map(|(i, &c)| if c == '.' && i > 0 && digit(chars.get(i - 1)) && digit(chars.get(i + 1)) { ',' } else { c }).collect()
 }
 
 /// A comma-separated description built in English (an export summary line) in the interface

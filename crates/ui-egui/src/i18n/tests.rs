@@ -1022,7 +1022,7 @@ fn byte_units_follow_the_language() {
     let before = current();
     set_current(Language::Fr);
     assert_eq!(byte_units("34 MB"), "34 Mo");
-    assert_eq!(byte_units("1.2 GB"), "1.2 Go");
+    assert_eq!(byte_units("1.2 GB"), "1,2 Go");
     assert_eq!(byte_units("12 KB"), "12 Ko");
     for odd in ["", "MB", "34MB", "12 TB", "–", "junk MB", " MB", "NaN GB", "inf KB"] {
         assert_eq!(byte_units(odd), odd);
@@ -1059,5 +1059,16 @@ fn summary_lines_are_translated_piece_by_piece() {
     assert!(shown.contains("9.94") && shown.contains("48"), "{shown}");
     set_current(Language::En);
     assert_eq!(tr_list(line), line);
+    set_current(before);
+}
+
+/// Numbers the app writes take the language's decimal mark; other dots stay.
+#[test]
+fn decimal_marks_follow_the_language() {
+    let before = current();
+    set_current(Language::Fr);
+    assert_eq!(decimals("642 images (26.777 s), H.264, 1.0x, v.2"), "642 images (26,777 s), H.264, 1,0x, v.2");
+    set_current(Language::En);
+    assert_eq!(decimals("26.777 s"), "26.777 s");
     set_current(before);
 }

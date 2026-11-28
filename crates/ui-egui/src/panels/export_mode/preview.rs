@@ -68,7 +68,7 @@ pub(super) fn preview_column(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Re
             let (start, end) = range_ticks(ex, &q);
             let span = filmcraft_time::TimeRange::from_bounds(start, end);
             let frames = rate.frame_at(end - Tick(1)).saturating_add(1).saturating_sub(rate.frame_at(start)).max(0);
-            let seconds = format!("{:.3}", span.duration.seconds());
+            let seconds = crate::i18n::decimals(&format!("{:.3}", span.duration.seconds()));
             let label = if frames == 1 {
                 tlf!("1 frame ({seconds} s)", seconds = seconds)
             } else {
@@ -119,8 +119,8 @@ pub(super) fn preview_column(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Re
                 line(ui, "Output", &output_path(ex));
                 line(ui, "", &sum.format);
                 // the engine writes these in English (the CLI and automation read them too)
-                line(ui, "", &crate::i18n::tr_list(&sum.video));
-                line(ui, "", &crate::i18n::tr_list(&sum.audio));
+                line(ui, "", &crate::i18n::decimals(&crate::i18n::tr_list(&sum.video)));
+                line(ui, "", &crate::i18n::decimals(&crate::i18n::tr_list(&sum.audio)));
                 line(
                     ui,
                     "Source",
@@ -135,11 +135,11 @@ pub(super) fn preview_column(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Re
                 line(
                     ui,
                     "Range",
-                    &format!(
+                    &crate::i18n::decimals(&format!(
                         "{} ({:.2} s)",
                         crate::i18n::t(RANGES.iter().find(|(k, _)| *k == ex.range).map(|x| x.1).unwrap_or("")),
                         (range.1 - range.0).seconds()
-                    ),
+                    )),
                 );
             });
         })

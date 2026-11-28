@@ -589,10 +589,12 @@ impl Scan<'_> {
     /// An n / m at `j` that closes a nasal vowel: not followed by a vowel or another n / m.
     fn nasal_after(&self, j: usize) -> bool {
         let end = self.c.end;
-        matches!(self.at(j), Some('n' | 'm'))
-            && !self.vowel_at(j + 1)
-            && !matches!(self.at(j + 1), Some('n' | 'm'))
-            && !(j + 1 >= end && self.raw(j + 1).is_some_and(is_vowel_letter) && self.c.final_consonant_said)
+        if !matches!(self.at(j), Some('n' | 'm')) || self.vowel_at(j + 1) || matches!(self.at(j + 1), Some('n' | 'm')) {
+            return false;
+        }
+        // a word-final n / m before the next word's vowel, when final consonants are said
+        let linked = j + 1 >= end && self.raw(j + 1).is_some_and(is_vowel_letter) && self.c.final_consonant_said;
+        !linked
     }
     /// Letters read by an `ill` / final `il` group starting at `i` (after the vowel).
     fn ill_len(&self, i: usize) -> usize {
@@ -789,7 +791,7 @@ fn e_sound(w: &[char], i: usize, end: usize, c: &Core) -> &'static str {
         return if c.final_consonant_said || i + 1 == w.len() { "ə" } else { "ɛ" };
     }
     // before a said final consonant: sel, mer, avec, chef
-    if i + 2 == end && consonant(i + 1) && c.final_consonant_said && !w.get(end).is_some_and(|&ch| ch == 'e') {
+    if i + 2 == end && consonant(i + 1) && c.final_consonant_said && w.get(end).is_none_or(|&ch| ch != 'e') {
         return "ɛ";
     }
     // e + x: ɛ (exemple, texte)
