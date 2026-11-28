@@ -108,7 +108,9 @@ impl PanelSpecs<PanelKind> for FilmSpecs {
     fn spec(&self, panel: &PanelKind) -> PanelSpec {
         let title = match (panel, &self.timeline_title) {
             (PanelKind::Timeline, Some(title)) => title.clone(),
-            _ => crate::i18n::t(panel.title()).to_string(),
+            // A tab may have a shorter title than the panel's name in menus, so a group of seven
+            // tabs fits whole (a "Panel tab" catalog row; the full name falls back)
+            _ => crate::i18n::tr_ctx("Panel tab", panel.title()).to_string(),
         };
         // The video viewers float as document windows, say on a second display; the other panels
         // are tool windows.
