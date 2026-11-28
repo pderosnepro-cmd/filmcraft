@@ -15,6 +15,16 @@ Contenu
 - Voix naturelles (Kokoro) prises en charge : elles se téléchargent à la première utilisation.
 - Polices craft-fonts incluses (japonais, etc.) ; leurs licences sont dans font-licences\.
 
+Nouveaux outils de montage
+--------------------------
+- Clip > Habillages rapides : Bulle, Incrustation dans un coin, Carte qui pivote (3D),
+  Mosaïque (écran partagé), Carré de vidéos tournant, Zoom et panoramique lents.
+- Séquence > Supprimer les silences : coupe les blancs de la voix, le reste se resserre.
+- Marqueurs > Marqueurs sur le rythme, et Clip > Monter sur le rythme : les clips choisis
+  s'enchaînent sur les temps forts de la musique.
+Chaque outil s'annule en une fois (Ctrl+Z) et ses réglages restent modifiables dans les
+paramètres d'effet.
+
 Bon à savoir
 ------------
 - L'installateur et les programmes ne sont pas signés : Windows SmartScreen peut afficher
