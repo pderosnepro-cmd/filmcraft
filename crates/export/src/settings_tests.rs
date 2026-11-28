@@ -1239,7 +1239,11 @@ fn h264_high10_and_all_intra_export() {
             .args(["-v", "warning", "-i", &path, "-frames:v", "1", "-f", "rawvideo", "-pix_fmt", "yuv420p10le", "-"])
             .output()
             .unwrap();
-        assert!(out.status.success() && out.stderr.is_empty(), "{path}: {}", String::from_utf8_lossy(&out.stderr));
+        // ffmpeg 9 notes that a re-encode drops the stream's vendor id: that is about metadata,
+        // not the picture; any other warning is a decoding problem
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        let warnings: Vec<&str> = stderr.lines().filter(|l| !l.contains("Discarding stream metadata 'vendor_id'")).collect();
+        assert!(out.status.success() && warnings.is_empty(), "{path}: {stderr}");
         // 50 % grey renders as RGBA 127 or 128: Y = 64 + 876 * 127/255 = 500 .. 64 + 876 * 128/255 = 504
         let y0 = u16::from_le_bytes([out.stdout[2 * (90 * 320 + 160)], out.stdout[2 * (90 * 320 + 160) + 1]]);
         assert!((499..=505).contains(&y0), "{path}: Y {y0}");
