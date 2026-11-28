@@ -1,1 +1,1 @@
-084ebc192d9774fc6939dc951ef161c20993e495bad18cf2c25446e930702e54  FilmCraft-perso-0.20.1-2-Setup.exe
+0cf25dca76423d0a94bdc7913fc167b6d8c1ae27a5aa787e05e833ad1969f52f  FilmCraft-perso-0.20.1-3-Setup.exe
