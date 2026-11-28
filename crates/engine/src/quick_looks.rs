@@ -43,6 +43,13 @@ pub(crate) fn commands() -> Vec<CommandSpec> {
             has_selection,
             picture_in_picture,
         ),
+        spec(
+            "clip.quickLook.slowZoom",
+            "Slow Zoom and Pan",
+            r#"{"clips":[id]?,"zoom":f64=120,"direction":"in|out"="in","pan":"auto|left|right|up|down|none"="auto"}"#,
+            has_selection,
+            slow_zoom,
+        ),
         spec("clip.quickLook.spinCard", "Spinning Card (3D)", r#"{"clips":[id]?,"turns":f64=1,"axis":"y|x"="y"}"#, has_selection, spin_card),
         spec("clip.quickLook.grid", "Video Grid (Split Screen)", r#"{"clips":[id]?,"size":f64=90,"gap":f64=2}"#, has_selection, grid_still),
         spec("clip.quickLook.rotatingGrid", "Rotating Video Square", r#"{"clips":[id]?,"turns":f64=1,"size":f64=70,"gap":f64=2}"#, has_selection, grid_turning),
@@ -143,11 +150,16 @@ fn crop(frame: (u32, u32), size: (u32, u32), keep: (f64, f64), radius: f64, bord
 /// clip `it`. Keyframes are in media time (what the clip shows at that moment, with its speed,
 /// reverse and holds), so clips cut from different points of their sources still move together.
 fn ramp(it: &TrackItem, t0: Tick, t1: Tick, from: f64, to: f64) -> Vec<Keyframe> {
+    ramp_values(it, t0, t1, ParamValue::Float(from), ParamValue::Float(to))
+}
+
+/// [`ramp`] for any parameter value (a point, a colour…).
+fn ramp_values(it: &TrackItem, t0: Tick, t1: Tick, from: ParamValue, to: ParamValue) -> Vec<Keyframe> {
     let (m0, m1) = (it.effect_time_at(t0), it.effect_time_at(t1));
     if m0 == m1 {
         return Vec::new();
     }
-    let mut keys = vec![Keyframe::new(m0, ParamValue::Float(from)), Keyframe::new(m1, ParamValue::Float(to))];
+    let mut keys = vec![Keyframe::new(m0, from), Keyframe::new(m1, to)];
     keys.sort_by_key(|k| k.time);
     keys
 }
@@ -247,6 +259,85 @@ fn picture_in_picture(s: &mut Session, p: &Value) -> Result<Value> {
         Ok(())
     })?;
     Ok(json!({"clips": n, "corner": corner}))
+}
+
+// ---------------------------------------------------------------------------------------------
+// Slow zoom and pan
+
+/// The picture fills the frame and drifts: it zooms in (or out) slowly to `zoom` % while the view
+/// glides to one side, as in a documentary on still photos. The edges never show: the pan stays
+/// within what the larger end of the zoom has beyond the frame. With `pan: auto` the direction
+/// changes from one clip to the next, so a series of photos does not keep sliding the same way.
+fn slow_zoom(s: &mut Session, p: &Value) -> Result<Value> {
+    const CMD: &str = "clip.quickLook.slowZoom";
+    let zoom = num(p, "zoom", 120.0, 101.0, 200.0, CMD)? / 100.0;
+    let zoom_in = match str_p(p, "direction").unwrap_or("in") {
+        "in" => true,
+        "out" => false,
+        other => return Err(bad(CMD, format!("unknown direction `{other}` (in or out)"))),
+    };
+    let pan = str_p(p, "pan").unwrap_or("auto");
+    if !matches!(pan, "auto" | "left" | "right" | "up" | "down" | "none") {
+        return Err(bad(CMD, format!("unknown pan `{pan}` (auto, left, right, up, down or none)")));
+    }
+    let clips = video_clips(s, p, CMD)?;
+    let frame = s.active_sequence().map(|q| (q.settings.width.max(1), q.settings.height.max(1))).ok_or(crate::EngineError::NoSequence)?;
+    let (fw, fh) = (f64::from(frame.0), f64::from(frame.1));
+    let order: Vec<(ClipId, (u32, u32), &'static str)> = clips
+        .iter()
+        .enumerate()
+        .map(|(k, (_, it, sz))| {
+            let dir = match pan {
+                "auto" => ["right", "left", "down", "up"].get(k % 4).copied().unwrap_or("right"),
+                "left" => "left",
+                "right" => "right",
+                "up" => "up",
+                "down" => "down",
+                _ => "none",
+            };
+            (it.id, *sz, dir)
+        })
+        .collect();
+    let ids: Vec<ClipId> = order.iter().map(|c| c.0).collect();
+    let n = edit_clips(s, "Slow Zoom and Pan", &ids, |it| {
+        let Some((_, sz, dir)) = order.iter().find(|c| c.0 == it.id).copied() else { return Ok(()) };
+        let (sw, sh) = (f64::from(sz.0), f64::from(sz.1));
+        // the scale that just fills the frame, and the larger end of the zoom
+        let cover = (fw / sw).max(fh / sh);
+        let big = cover * zoom;
+        // how far the larger picture reaches beyond the frame, kept a little inside
+        let room = |scale: f64| (((sw * scale - fw) / 2.0).max(0.0) * 0.9, ((sh * scale - fh) / 2.0).max(0.0) * 0.9);
+        let (rx, ry) = room(big);
+        // the view moves `dir`: the picture slides the other way
+        let to = match dir {
+            "right" => (fw / 2.0 - rx, fh / 2.0),
+            "left" => (fw / 2.0 + rx, fh / 2.0),
+            "down" => (fw / 2.0, fh / 2.0 - ry),
+            "up" => (fw / 2.0, fh / 2.0 + ry),
+            _ => (fw / 2.0, fh / 2.0),
+        };
+        let centre = (fw / 2.0, fh / 2.0);
+        // the small end is centred (it has no room); the large end is panned
+        let (s0, s1, p0, p1) = if zoom_in { (cover, big, centre, to) } else { (big, cover, to, centre) };
+        let (t0, t1) = (it.start, it.end());
+        let scale_keys = ramp(it, t0, t1, s0 * 100.0, s1 * 100.0);
+        let pos_keys = ramp_values(it, t0, t1, point(p0.0, p0.1), point(p1.0, p1.1));
+        it.scale_to_frame = false;
+        let m = motion(it, frame)?;
+        set(m, "anchor", point(sw / 2.0, sh / 2.0));
+        for name in ["scale", "scale_width"] {
+            if let Some(v) = m.params.get_mut(name) {
+                v.value = ParamValue::Float(s0 * 100.0);
+                v.keyframes = scale_keys.clone();
+            }
+        }
+        if let Some(v) = m.params.get_mut("position") {
+            v.value = point(p0.0, p0.1);
+            v.keyframes = pos_keys;
+        }
+        Ok(())
+    })?;
+    Ok(json!({"clips": n}))
 }
 
 // ---------------------------------------------------------------------------------------------

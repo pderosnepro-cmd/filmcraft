@@ -37,7 +37,14 @@ fn frame(s: &mut Session, seconds: f64) -> filmcraft_render::Image {
 #[test]
 fn quick_looks_are_in_the_clip_menu() {
     let ids: Vec<&str> = crate::commands::command_specs().iter().filter(|c| c.menu == ["Clip", "Quick Looks"]).map(|c| c.id).collect();
-    for id in ["clip.quickLook.bubble", "clip.quickLook.pictureInPicture", "clip.quickLook.spinCard", "clip.quickLook.grid", "clip.quickLook.rotatingGrid"] {
+    for id in [
+        "clip.quickLook.slowZoom",
+        "clip.quickLook.bubble",
+        "clip.quickLook.pictureInPicture",
+        "clip.quickLook.spinCard",
+        "clip.quickLook.grid",
+        "clip.quickLook.rotatingGrid",
+    ] {
         assert!(ids.contains(&id), "{id} in {ids:?}");
     }
 }
@@ -189,4 +196,37 @@ fn quick_looks_refuse_bad_parameters() {
     // audio-only selections have no picture to lay out
     let a = s.active_sequence().unwrap().tracks(TrackKind::Audio)[0].items[0].id.0;
     assert!(s.execute("clip.quickLook.bubble", json!({"clips": [a]})).is_err());
+}
+
+/// Slow zoom and pan: the picture fills the frame from the first frame to the last (no edge
+/// shows) and moves in between; one undo step; applied again it replaces its keyframes.
+#[test]
+fn a_slow_zoom_fills_the_frame_and_moves() {
+    let mut s = demo();
+    let clip = v1(&s, 4)[3];
+    let q = s.active_sequence().unwrap();
+    let (_, it) = q.find_item(ClipId(clip)).unwrap();
+    let (start, dur) = (it.start.seconds(), it.duration.seconds());
+    let undo = s.history.undo.len();
+    s.execute("clip.quickLook.slowZoom", json!({"clips": [clip], "zoom": 130, "pan": "right"})).unwrap();
+    assert_eq!(s.history.undo.len(), undo + 1, "one undo step");
+    // away from the transitions at the clip's edges
+    let first = frame(&mut s, start + dur * 0.3);
+    let last = frame(&mut s, start + dur * 0.7);
+    for img in [&first, &last] {
+        for (x, y) in [(0.02, 0.05), (0.98, 0.05), (0.02, 0.95), (0.98, 0.95)] {
+            let m = mean(img, x - 0.02, y - 0.03, x + 0.02, y + 0.03);
+            assert!(m > 0.03, "the corner at {x},{y} is covered ({m})");
+        }
+    }
+    let moved = (0..10).map(|k| k as f64 / 10.0).map(|x| (mean(&first, x, 0.4, x + 0.1, 0.6) - mean(&last, x, 0.4, x + 0.1, 0.6)).abs()).fold(0.0f32, f32::max);
+    assert!(moved > 0.01, "the picture moved ({moved})");
+    s.execute("clip.quickLook.slowZoom", json!({"clips": [clip]})).unwrap();
+    let q = s.active_sequence().unwrap();
+    let (_, it) = q.find_item(ClipId(clip)).unwrap();
+    let m = it.effects.iter().find(|e| e.effect == "motion").unwrap();
+    assert_eq!(m.params["scale"].keyframes.len(), 2, "re-applied, not stacked");
+    for p in [json!({"clips": [clip], "zoom": 99}), json!({"clips": [clip], "direction": "sideways"}), json!({"clips": [clip], "pan": "diagonal"})] {
+        assert!(s.execute("clip.quickLook.slowZoom", p.clone()).is_err(), "{p}");
+    }
 }
