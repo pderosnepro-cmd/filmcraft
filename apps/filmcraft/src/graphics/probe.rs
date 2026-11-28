@@ -44,6 +44,8 @@ pub const HUNG_AFTER: Duration = Duration::from_secs(60);
 const END_GRACE: Duration = Duration::from_secs(3);
 /// How often a running child is looked at.
 const POLL: Duration = Duration::from_millis(50);
+/// How long the end of a test start waits for its last output lines to be read.
+const READER_GRACE: Duration = Duration::from_secs(2);
 /// Lines read from a child; it writes five.
 const MAX_LINES: usize = 32;
 /// Adapters named in a message.
@@ -198,6 +200,7 @@ fn run_test(mut cmd: Command, timeout: Duration) -> Outcome {
         Err(e) => return Outcome::NotRun(e.to_string()),
     };
     let report = Arc::new(Mutex::new(Report::default()));
+    let mut reader = None;
     if let Some(out) = child.stdout.take() {
         let report = Arc::clone(&report);
         let read = move || {
@@ -208,8 +211,9 @@ fn run_test(mut cmd: Command, timeout: Duration) -> Outcome {
                 }
             }
         };
-        if let Err(e) = std::thread::Builder::new().name("graphics-test".into()).spawn(read) {
-            log::warn!("can't read the graphics test start: {e}");
+        match std::thread::Builder::new().name("graphics-test".into()).spawn(read) {
+            Ok(handle) => reader = Some(handle),
+            Err(e) => log::warn!("can't read the graphics test start: {e}"),
         }
     }
     let snapshot = |report: &Arc<Mutex<Report>>| report.lock().map(|r| r.clone()).unwrap_or_default();
@@ -223,8 +227,14 @@ fn run_test(mut cmd: Command, timeout: Duration) -> Outcome {
         }
         match child.try_wait() {
             Ok(Some(status)) => {
-                // Let the reader take the last lines.
-                std::thread::sleep(POLL);
+                // Let the reader take the last lines: it ends at the end of the output, which the
+                // exit closes (a busy machine can take longer than one poll to get there, and the
+                // lost last line turned a failed mode into one that died). Bounded, as something
+                // the child started could keep the output open.
+                let until = Instant::now() + READER_GRACE;
+                while reader.as_ref().is_some_and(|r| !r.is_finished()) && Instant::now() < until {
+                    std::thread::sleep(Duration::from_millis(5));
+                }
                 let r = snapshot(&report);
                 return if r.done {
                     Outcome::Passed(r)
